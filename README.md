@@ -82,7 +82,7 @@ kubectl scale deployment/catalog-deploy --replicas=3
 
 ---
 
-## 4. Solucionario: Preguntas de Reflexión de la Guía
+## 4. Preguntas de Reflexión de la Guía
 
 ### PREGUNTA 1: ¿Cuándo justifica migrar a una arquitectura de microservicios en lugar de mantener un monolito?
 **Respuesta:**
