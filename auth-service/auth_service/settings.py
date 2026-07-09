@@ -51,22 +51,30 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'auth_service.wsgi:application'
+WSGI_APPLICATION = 'auth_service.wsgi.application'
 
 # Configuración de base de datos Postgres (Database-per-Service)
 DATABASE_URL = os.getenv('DATABASE_URL', 'postgres://authuser:authpass@localhost:5432/authdb')
 try:
     parsed = urlparse(DATABASE_URL)
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': parsed.path.lstrip('/'),
-            'USER': parsed.username,
-            'PASSWORD': parsed.password,
-            'HOST': parsed.hostname,
-            'PORT': parsed.port or 5432,
+    if parsed.scheme in ('postgres', 'postgresql'):
+        DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.postgresql',
+                'NAME': parsed.path.lstrip('/'),
+                'USER': parsed.username,
+                'PASSWORD': parsed.password,
+                'HOST': parsed.hostname,
+                'PORT': parsed.port or 5432,
+            }
         }
-    }
+    else:
+        DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.sqlite3',
+                'NAME': BASE_DIR / 'db.sqlite3',
+            }
+        }
 except Exception:
     # Fallback por seguridad
     DATABASES = {

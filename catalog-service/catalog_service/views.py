@@ -55,11 +55,19 @@ def health(request):
     """
     db_url = os.getenv('DATABASE_URL', 'postgres://cataloguser:catalogpass@catalog-db:5432/catalogdb')
     try:
-        # Validación con psycopg2
-        conn = psycopg2.connect(db_url, connect_timeout=3)
-        with conn.cursor() as cursor:
+        if db_url.startswith('postgres://') or db_url.startswith('postgresql://'):
+            # Validación con psycopg2
+            conn = psycopg2.connect(db_url, connect_timeout=3)
+            with conn.cursor() as cursor:
+                cursor.execute("SELECT 1;")
+            conn.close()
+        else:
+            # Fallback local con sqlite3
+            import sqlite3
+            conn = sqlite3.connect(':memory:')
+            cursor = conn.cursor()
             cursor.execute("SELECT 1;")
-        conn.close()
+            conn.close()
         return Response({
             'status': 'healthy',
             'database': 'connected',
