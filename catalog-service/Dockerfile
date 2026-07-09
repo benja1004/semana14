@@ -27,12 +27,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Copiar las dependencias instaladas en la etapa builder
 COPY --from=builder /install /usr/local
 
-# Copiar el código de la aplicación
-COPY . .
-
 # Crear un usuario sin privilegios para ejecutar el contenedor (Non-Root User)
-RUN useradd -m -u 1000 appuser && \
-    chown -R appuser:appuser /app
+RUN useradd -m -u 1000 appuser
+
+# Copiar el código de la aplicación con el propietario correcto
+COPY --chown=appuser:appuser . .
 
 # Ejecutar como usuario no raíz por seguridad
 USER appuser
