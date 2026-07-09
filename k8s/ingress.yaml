@@ -1,0 +1,27 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: microservices-ingress
+  annotations:
+    # Anotación estándar para habilitar CORS si el cliente web externo lo requiere
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+spec:
+  rules:
+    - http:
+        paths:
+          # Ruta pública del endpoint de login (/login/) mapeada al auth-service
+          - path: /login/
+            pathType: Prefix
+            backend:
+              service:
+                name: auth-service
+                port:
+                  number: 8000
+          # Ruta pública del catálogo de productos (/catalog/) mapeada al catalog-service
+          - path: /catalog/
+            pathType: Prefix
+            backend:
+              service:
+                name: catalog-service
+                port:
+                  number: 8000

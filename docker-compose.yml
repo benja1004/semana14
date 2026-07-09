@@ -1,0 +1,77 @@
+version: '3.9'
+
+services:
+  # Base de datos aislada para el servicio de autenticación
+  auth-db:
+    image: postgres:15-alpine
+    container_name: auth-db
+    environment:
+      POSTGRES_DB: authdb
+      POSTGRES_USER: authuser
+      POSTGRES_PASSWORD: authpass
+    ports:
+      - "5431:5432"
+    volumes:
+      - auth-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U authuser -d authdb"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # Base de datos aislada para el servicio de catálogo
+  catalog-db:
+    image: postgres:15-alpine
+    container_name: catalog-db
+    environment:
+      POSTGRES_DB: catalogdb
+      POSTGRES_USER: cataloguser
+      POSTGRES_PASSWORD: catalogpass
+    ports:
+      - "5432:5432"
+    volumes:
+      - catalog-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cataloguser -d catalogdb"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # Microservicio de autenticación
+  auth-service:
+    build:
+      context: ./auth-service
+      dockerfile: Dockerfile
+    container_name: auth-service
+    ports:
+      - "8001:8000"
+    environment:
+      - DATABASE_URL=postgres://authuser:authpass@auth-db:5432/authdb
+      - JWT_SECRET=dev-secret-change-in-prod
+      - PYTHONUNBUFFERED=1
+    depends_on:
+      auth-db:
+        condition: service_healthy
+
+  # Microservicio de catálogo
+  catalog-service:
+    build:
+      context: ./catalog-service
+      dockerfile: Dockerfile
+    container_name: catalog-service
+    ports:
+      - "8002:8000"
+    environment:
+      - DATABASE_URL=postgres://cataloguser:catalogpass@catalog-db:5432/catalogdb
+      - AUTH_SERVICE_URL=http://auth-service:8000
+      - JWT_SECRET=dev-secret-change-in-prod
+      - PYTHONUNBUFFERED=1
+    depends_on:
+      catalog-db:
+        condition: service_healthy
+      auth-service:
+        condition: service_started
+
+volumes:
+  auth-data:
+  catalog-data:
