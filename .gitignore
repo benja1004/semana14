@@ -8,11 +8,17 @@ include/
 lib/
 lib64/
 share/
+.Python
+*.egg-info/
 
 # Python caching & bytecode
 __pycache__/
 *.py[cod]
 *$py.class
+
+# Django
+*.log
+staticfiles/
 
 # Local environment variables / Secrets
 .env
@@ -21,6 +27,7 @@ __pycache__/
 
 # Database fallbacks & Local Data
 *.sqlite3
+*.sqlite3-journal
 auth-service/db.sqlite3
 catalog-service/db.sqlite3
 auth-data/
